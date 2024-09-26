@@ -1,0 +1,67 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql" // You can change this based on the database you are using
+  url      = env("DATABASE_URL")
+}
+
+model Teacher {
+  id          String   @id @default(uuid()) // unique id for each teacher
+  name        String
+  email       String   @unique
+  branch      String
+  rollnumber  String
+  aboutinfo   String
+  tests       Test[]   // A teacher can create multiple tests
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model Student {
+  id          String      @id @default(uuid()) // unique id for each student
+  name        String
+  email       String      @unique
+  attempts    TestAttempt[] // A student can attempt multiple tests
+  rollnumber  String
+  aboutinfo   String
+  section     String
+  branch      String
+  address     String
+  notifications Notification[] // A student can have multiple notifications
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+}
+
+model Test {
+  id          String       @id @default(uuid()) // unique id for each test
+  title       String
+  description String
+  teacher     Teacher      @relation(fields: [teacherId], references: [id])
+  teacherId   String       // Foreign key to the Teacher model
+  attempts    TestAttempt[] // A test can have multiple attempts by students
+  notifications Notification[] // A test can have multiple notifications
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+}
+
+model TestAttempt {
+  id        String   @id @default(uuid()) // unique id for each test attempt
+  score     Float
+  student   Student  @relation(fields: [studentId], references: [id])
+  studentId String   // Foreign key to the Student model
+  test      Test     @relation(fields: [testId], references: [id])
+  testId    String   // Foreign key to the Test model
+  createdAt DateTime @default(now())
+}
+
+model Notification {
+  id        String   @id @default(uuid()) // unique id for each notification
+  student   Student  @relation(fields: [studentId], references: [id])
+  studentId String   // Foreign key to the Student model
+  test      Test     @relation(fields: [testId], references: [id])
+  testId    String   // Foreign key to the Test model
+  message   String   // Message content for the notification
+  createdAt DateTime @default(now())
+}
